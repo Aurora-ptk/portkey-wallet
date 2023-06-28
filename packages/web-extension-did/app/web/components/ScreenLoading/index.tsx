@@ -1,10 +1,11 @@
 import Loading from 'components/Loading';
 import { useAppSelector } from 'store/Provider/hooks';
 import './index.less';
+import clsx from 'clsx';
 
 export default function ScreenLoading() {
   const {
-    loadingInfo: { isLoading, loadingText },
+    loadingInfo: { isLoading, loadingText, isEllipsis },
   } = useAppSelector((state) => state.userInfo);
 
   console.log(isLoading, 'isLoading===');
@@ -20,8 +21,12 @@ export default function ScreenLoading() {
                   backgroundColor: `rgb(00 00 00 / ${isLoading * 100}%)`,
                 }
           }>
-          <Loading />
-          <div className="loading-text">{loadingText ? loadingText : 'Loading...'}</div>
+          <div className="loading-indicator flex-column-center">
+            <Loading />
+            <div className={clsx(['loading-text', isEllipsis ? 'ellipsis' : 'center'])}>
+              {loadingText ? loadingText : 'Loading...'}
+            </div>
+          </div>
         </div>
       )}
     </>

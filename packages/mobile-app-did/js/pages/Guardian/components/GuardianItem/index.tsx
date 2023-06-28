@@ -15,6 +15,7 @@ import { sleep } from '@portkey-wallet/utils';
 import {
   ApprovalType,
   AuthenticationInfo,
+  RecaptchaType,
   VerificationType,
   VerifierInfo,
   VerifyStatus,
@@ -63,13 +64,9 @@ function GuardianItemButton({
   const { status, requestCodeResult } = itemStatus || {};
   const verifyToken = useVerifyToken();
   const guardianInfo = useMemo(() => {
-    let _verificationType = VerificationType.communityRecovery;
-    if (
-      approvalType === ApprovalType.addGuardian ||
-      approvalType === ApprovalType.deleteGuardian ||
-      approvalType === ApprovalType.editGuardian
-    ) {
-      _verificationType = VerificationType.editGuardianApproval;
+    let _verificationType = VerificationType.optGuardianApproval;
+    if (approvalType === ApprovalType.communityRecovery) {
+      _verificationType = VerificationType.communityRecovery;
     }
     return {
       guardianItem,
@@ -93,6 +90,10 @@ function GuardianItemButton({
           guardianIdentifier: guardianInfo.guardianItem.guardianAccount,
           verifierId: guardianInfo.guardianItem.verifier?.id,
           chainId: originChainId,
+          operationType:
+            approvalType === ApprovalType.communityRecovery
+              ? RecaptchaType.communityRecovery
+              : RecaptchaType.optGuardian,
         },
       });
       if (req.verifierSessionId) {
@@ -115,7 +116,7 @@ function GuardianItemButton({
       CommonToast.failError(error);
     }
     Loading.hide();
-  }, [onSetGuardianStatus, guardianInfo]);
+  }, [onSetGuardianStatus, guardianInfo, approvalType, originChainId]);
 
   const onVerifierAuth = useCallback(async () => {
     try {
@@ -224,7 +225,7 @@ export default function GuardianItem({
   setGuardianStatus,
   isExpired,
   isSuccess,
-  approvalType = ApprovalType.register,
+  approvalType = ApprovalType.communityRecovery,
   authenticationInfo,
 }: GuardianAccountItemProps) {
   const itemStatus = useMemo(() => guardiansStatus?.[guardianItem.key], [guardianItem.key, guardiansStatus]);
@@ -241,20 +242,24 @@ export default function GuardianItem({
   const renderGuardianAccount = useCallback(() => {
     if (!guardianItem.firstName) {
       return (
-        <TextM numberOfLines={1} style={[styles.nameStyle, GStyles.flex1]}>
+        <TextM
+          numberOfLines={[LoginType.Apple, LoginType.Google].includes(guardianItem.guardianType) ? 1 : 2}
+          style={[styles.nameStyle, GStyles.flex1]}>
           {guardianAccount}
         </TextM>
       );
     }
     return (
       <View style={[styles.nameStyle, GStyles.flex1]}>
-        <TextM style={styles.firstNameStyle}>{guardianItem.firstName}</TextM>
+        <TextM style={styles.firstNameStyle} numberOfLines={1}>
+          {guardianItem.firstName}
+        </TextM>
         <TextS style={FontStyles.font3} numberOfLines={1}>
           {guardianAccount}
         </TextS>
       </View>
     );
-  }, [guardianAccount, guardianItem.firstName]);
+  }, [guardianAccount, guardianItem.firstName, guardianItem.guardianType]);
 
   return (
     <View style={[styles.itemRow, isBorderHide && styles.itemWithoutBorder, disabled && styles.disabledStyle]}>

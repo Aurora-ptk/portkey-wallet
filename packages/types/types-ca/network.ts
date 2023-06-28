@@ -9,4 +9,13 @@ export type NetworkItem = {
   networkIconUrl?: string;
   connectUrl: string;
   tokenClaimContractAddress?: string;
+  cmsUrl?: string;
+  s3Url?: string;
+  portkeyFinanceUrl?: string; // portkey website url
+  buyConfig?: {
+    ach?: {
+      appId?: string;
+      baseUrl?: string;
+    };
+  };
 };

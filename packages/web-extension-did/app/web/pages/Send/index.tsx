@@ -25,13 +25,15 @@ import { WalletError } from '@portkey-wallet/store/wallet/type';
 import getTransferFee from './utils/getTransferFee';
 import { ZERO } from '@portkey-wallet/constants/misc';
 import { TransactionError } from '@portkey-wallet/constants/constants-ca/assets';
-import './index.less';
 import { the2ThFailedActivityItemType } from '@portkey-wallet/types/types-ca/activity';
 import { contractErrorHandler } from 'utils/tryErrorHandler';
 import { CROSS_FEE } from '@portkey-wallet/constants/constants-ca/wallet';
 import PromptFrame from 'pages/components/PromptFrame';
 import clsx from 'clsx';
 import { AddressCheckError } from '@portkey-wallet/store/store-ca/assets/type';
+import PromptEmptyElement from 'pages/components/PromptEmptyElement';
+import { ChainId } from '@portkey-wallet/types';
+import './index.less';
 
 export type Account = { address: string; name?: string };
 
@@ -92,7 +94,7 @@ export default function Send() {
         setErrorMsg(AddressCheckError.recipientAddressIsInvalid);
         return false;
       }
-      const selfAddress = wallet[state.chainId].caAddress;
+      const selfAddress = wallet?.[state.chainId as ChainId]?.caAddress || '';
       if (isEqAddress(selfAddress, getAelfAddress(toAccount.address)) && suffix === state.chainId) {
         setErrorMsg(AddressCheckError.equalIsValid);
         return false;
@@ -153,7 +155,7 @@ export default function Send() {
   );
 
   const getTranslationInfo = useCallback(
-    async (num = '') => {
+    async (num = ''): Promise<string | void> => {
       try {
         if (!toAccount?.address) throw 'No toAccount';
         const privateKey = await aes.decrypt(wallet.AESEncryptPrivateKey, passwordSeed);
@@ -305,7 +307,7 @@ export default function Send() {
     () => ({
       0: {
         btnText: 'Next',
-        handler: () => {
+        handler: (): any => {
           const res = validateToAddress(toAccount);
 
           if (!res) return;
@@ -367,7 +369,7 @@ export default function Send() {
           <AmountInput
             type={type as any}
             fromAccount={{
-              address: wallet[state.chainId].caAddress,
+              address: wallet?.[state.chainId as ChainId]?.caAddress || '',
               AESEncryptPrivateKey: wallet.AESEncryptPrivateKey,
             }}
             toAccount={{
@@ -487,6 +489,7 @@ export default function Send() {
             </Button>
           </p>
         )}
+        {isPrompt ? <PromptEmptyElement /> : null}
       </div>
     );
   }, [StageObj, btnDisabled, errorMsg, isPrompt, navigate, stage, symbol, t, toAccount, type, walletName]);

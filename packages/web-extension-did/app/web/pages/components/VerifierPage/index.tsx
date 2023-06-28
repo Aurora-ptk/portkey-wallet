@@ -1,4 +1,3 @@
-import { checkVerificationCode } from '@portkey-wallet/api/api-did/utils/verification';
 import { Button, message } from 'antd';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAppDispatch, useLoading } from 'store/Provider/hooks';
@@ -18,6 +17,7 @@ import { verification } from 'utils/api';
 import { useOriginChainId } from '@portkey-wallet/hooks/hooks-ca/wallet';
 import { useCommonState } from 'store/Provider/hooks';
 import { useLocation } from 'react-router';
+import { RecaptchaType } from '@portkey-wallet/types/verifier';
 
 const MAX_TIMER = 60;
 
@@ -27,6 +27,7 @@ enum VerificationError {
 }
 
 interface VerifierPageProps {
+  recaptchaType: RecaptchaType;
   loginAccount?: LoginInfo;
   currentGuardian?: UserGuardianItem;
   guardianType?: LoginType;
@@ -34,7 +35,13 @@ interface VerifierPageProps {
   onSuccess?: (res: { verificationDoc: string; signature: string; verifierId: string }) => void;
 }
 
-export default function VerifierPage({ currentGuardian, guardianType, isInitStatus, onSuccess }: VerifierPageProps) {
+export default function VerifierPage({
+  recaptchaType,
+  currentGuardian,
+  guardianType,
+  isInitStatus,
+  onSuccess,
+}: VerifierPageProps) {
   const { setLoading } = useLoading();
   const [timer, setTimer] = useState<number>(0);
   const { isNotLessThan768 } = useCommonState();
@@ -64,13 +71,15 @@ export default function VerifierPage({ currentGuardian, guardianType, isInitStat
           if (!currentGuardian?.verifierInfo) throw 'Missing verifierInfo!!!';
           setLoading(true);
 
-          const res = await checkVerificationCode({
-            type: LoginType[currentGuardian?.guardianType as LoginType],
-            guardianIdentifier: currentGuardian.guardianAccount.replaceAll(' ', ''),
-            verifierSessionId: currentGuardian.verifierInfo.sessionId,
-            verificationCode: code,
-            verifierId: currentGuardian.verifier?.id || '',
-            chainId: originChainId,
+          const res = await verification.checkVerificationCode({
+            params: {
+              type: LoginType[currentGuardian?.guardianType as LoginType],
+              guardianIdentifier: currentGuardian.guardianAccount.replaceAll(' ', ''),
+              verifierSessionId: currentGuardian.verifierInfo.sessionId,
+              verificationCode: code,
+              verifierId: currentGuardian.verifier?.id || '',
+              chainId: originChainId,
+            },
           });
 
           setLoading(false);
@@ -106,6 +115,7 @@ export default function VerifierPage({ currentGuardian, guardianType, isInitStat
           type: LoginType[guardianType],
           verifierId: currentGuardian.verifier?.id || '',
           chainId: originChainId,
+          operationType: recaptchaType,
         },
       });
       setLoading(false);
@@ -127,7 +137,7 @@ export default function VerifierPage({ currentGuardian, guardianType, isInitStat
       const _error = verifyErrorHandler(error);
       message.error(_error);
     }
-  }, [currentGuardian, guardianType, originChainId, dispatch, setLoading]);
+  }, [currentGuardian, guardianType, originChainId, dispatch, setLoading, recaptchaType]);
 
   useEffect(() => {
     if (timer !== MAX_TIMER) return;
