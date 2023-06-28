@@ -7,7 +7,6 @@
   "npmClient": "yarn",
   "command": {
     "publish": {
-      "allowBranch": ["release/*"],
       "message": "chore: 🤖 release %s"
     }
   }
