@@ -21,12 +21,8 @@ jobs:
       - run: yarn run test-cov
       - name: Coverage Diff
         uses: greatwizard/coverage-diff-action@v1
-        uses: romeovs/lcov-reporter-action@v0.2.16 # output test coverage
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-
-          # Coverage Results File
-          lcov-file: ./coverage/lcov.info
 
           # Path of the json-summary file to analyze.
           coverage-filename: coverage/coverage-summary.json
