@@ -17,7 +17,6 @@ module.exports = {
     '!**/*.test.{ts,tsx}',
   ],
   coverageReporters: ['text', 'json-summary'],
-  reporters: ['default', 'jest-github-reporter'],
   moduleNameMapper: {
     '\\.(css|less)$': 'identity-obj-proxy',
   },
