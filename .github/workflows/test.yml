@@ -1,4 +1,4 @@
-name: Unit Test Coverage
+name: Unit Test
 
 on:
   push:
@@ -8,16 +8,18 @@ on:
 
 jobs:
   test:
+    name: Coverage
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [10.x]
+
     steps:
     - uses: actions/checkout@master
     - uses: bahmutov/npm-install@v1
     - run: yarn test-cov
     - uses: vebr/jest-lcov-reporter@v0.2.0
       with:
-        name: Unit Test Coverage
+        
         github-token: ${{ secrets.GITHUB_TOKEN }}
         lcov-file: ./coverage/lcov.info
