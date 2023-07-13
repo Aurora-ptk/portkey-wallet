@@ -13,10 +13,19 @@ module.exports = {
     // '**/packages/web-extension-did/app/web/hooks/useCaInfoOnChain.ts',
     // '**/packages/web-extension-did/app/web/hooks/useNetwork.ts',
     '!**/packages/hooks/hooks-ca/contact.{ts,tsx}',
+    '!**/packages/hooks/hooks-ca/misc.{ts,tsx}',
     '!**/node_modules/**',
     '!**/*.test.{ts,tsx}',
   ],
-  coverageReporters: ['text', 'json-summary'],
+  // coverageReporters: ['text', 'json-summary'],
+  coverageThreshold: {
+    global: {
+      branches: 95,
+      functions: 95,
+      lines: 95,
+      statements: 95,
+    },
+  },
   moduleNameMapper: {
     '\\.(css|less)$': 'identity-obj-proxy',
   },
