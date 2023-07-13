@@ -25,5 +25,6 @@ export const MiscState: { misc: IMiscState } = {
       ],
     },
     defaultPhoneCountryCode: { country: 'Singapore', code: '65', iso: 'SG' },
+    localPhoneCountryCode: { country: 'United States', code: '1', iso: 'US' },
   },
 };

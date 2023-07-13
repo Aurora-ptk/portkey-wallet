@@ -1,15 +1,25 @@
 import { MiscState } from '../../../test/data/miscState';
 import { renderHookWithProvider } from '../../../test/utils/render';
 import { setupStore } from '../../../test/utils/setup';
-import { useMisc, useSetLocalPhoneCountryCode } from './misc';
+import { useMisc, useSetLocalPhoneCountryCode, usePhoneCountryCode } from './misc';
 import { useAppCommonDispatch } from '../index';
 import { renderHook } from '@testing-library/react';
 import { CountryItem } from '@portkey-wallet/types/types-ca/country';
 import * as MiscActions from '@portkey-wallet/store/store-ca/misc/actions';
+import * as indexHook from '.';
+import * as networkHook from '@portkey-wallet/hooks/hooks-ca/network';
+import { MainnetNetworkInfo, TestnetNetworkInfo } from '../../../test/data/networkState';
+import { DefaultCountry } from '@portkey-wallet/constants/constants-ca/country';
 
 jest.mock('../index', () => ({
   useAppCommonDispatch: jest.fn(),
 }));
+
+beforeEach(() => {
+  jest.resetAllMocks();
+  jest.clearAllMocks();
+  jest.restoreAllMocks();
+});
 
 describe('useMisc', () => {
   test('get misc data successfully', () => {
@@ -41,5 +51,82 @@ describe('useSetLocalPhoneCountryCode', () => {
 
     expect(useAppCommonDispatch).toHaveBeenCalled();
     expect(MiscActions.setLocalPhoneCountryCodeAction).toHaveBeenCalled();
+  });
+});
+
+describe('usePhoneCountryCode', () => {
+  test('should return correct values', () => {
+    const dispatchMock = jest.fn();
+    const useAppCASelectorMock = jest.fn().mockReturnValue(MiscState.misc);
+
+    jest.spyOn(indexHook, 'useAppCASelector').mockImplementation(useAppCASelectorMock);
+    jest.spyOn(networkHook, 'useCurrentNetworkInfo').mockReturnValue(TestnetNetworkInfo);
+    jest.spyOn(networkHook, 'useNetworkList').mockReturnValue([TestnetNetworkInfo, MainnetNetworkInfo]);
+    (useAppCommonDispatch as jest.Mock).mockReturnValue(dispatchMock);
+    jest.spyOn(MiscActions, 'getPhoneCountryCode').mockImplementation(jest.fn());
+
+    const { result } = renderHook(() => usePhoneCountryCode(true));
+
+    expect(result.current.phoneCountryCodeList).toHaveLength(8);
+    expect(result.current.phoneCountryCodeIndex).toHaveLength(7);
+    expect(result.current.localPhoneCountryCode).toEqual(MiscState.misc.localPhoneCountryCode);
+  });
+
+  test('not localPhoneCountryCode, and return correct values', () => {
+    const dispatchMock = jest.fn();
+    const useAppCASelectorMock = jest.fn().mockReturnValue({
+      phoneCountryCodeListChainMap: [MiscState.misc.phoneCountryCodeListChainMap?.MAIN],
+      defaultPhoneCountryCode: MiscState.misc.defaultPhoneCountryCode,
+    });
+
+    jest.spyOn(indexHook, 'useAppCASelector').mockImplementation(useAppCASelectorMock);
+    jest.spyOn(networkHook, 'useCurrentNetworkInfo').mockReturnValue(TestnetNetworkInfo);
+    jest.spyOn(networkHook, 'useNetworkList').mockReturnValue([TestnetNetworkInfo, MainnetNetworkInfo]);
+    (useAppCommonDispatch as jest.Mock).mockReturnValue(dispatchMock);
+    jest.spyOn(MiscActions, 'getPhoneCountryCode').mockImplementation(jest.fn());
+
+    const { result } = renderHook(() => usePhoneCountryCode(true));
+
+    expect(result.current.phoneCountryCodeList).toHaveLength(0);
+    expect(result.current.phoneCountryCodeIndex).toHaveLength(0);
+    expect(result.current.localPhoneCountryCode).toEqual(MiscState.misc.defaultPhoneCountryCode);
+  });
+
+  test('not localPhoneCountryCode and defaultPhoneCountryCode, and return correct values', () => {
+    const dispatchMock = jest.fn();
+    const useAppCASelectorMock = jest.fn().mockReturnValue({
+      phoneCountryCodeListChainMap: [MiscState.misc.phoneCountryCodeListChainMap?.MAIN],
+    });
+
+    jest.spyOn(indexHook, 'useAppCASelector').mockImplementation(useAppCASelectorMock);
+    jest.spyOn(networkHook, 'useCurrentNetworkInfo').mockReturnValue(TestnetNetworkInfo);
+    jest.spyOn(networkHook, 'useNetworkList').mockReturnValue([TestnetNetworkInfo, MainnetNetworkInfo]);
+    (useAppCommonDispatch as jest.Mock).mockReturnValue(dispatchMock);
+    jest.spyOn(MiscActions, 'getPhoneCountryCode').mockImplementation(jest.fn());
+
+    const { result } = renderHook(() => usePhoneCountryCode(true));
+
+    expect(result.current.phoneCountryCodeList).toHaveLength(0);
+    expect(result.current.phoneCountryCodeIndex).toHaveLength(0);
+    expect(result.current.localPhoneCountryCode).toEqual(DefaultCountry);
+  });
+
+  test('should dispatch getPhoneCountryCode only for current networkType when not initializing', () => {
+    const dispatchMock = jest.fn();
+    const useAppCASelectorMock = jest.fn().mockReturnValue(MiscState.misc);
+
+    jest.spyOn(indexHook, 'useAppCASelector').mockImplementation(useAppCASelectorMock);
+    jest.spyOn(networkHook, 'useCurrentNetworkInfo').mockReturnValue(TestnetNetworkInfo);
+    jest.spyOn(networkHook, 'useNetworkList').mockReturnValue([TestnetNetworkInfo, MainnetNetworkInfo]);
+    (useAppCommonDispatch as jest.Mock).mockReturnValue(dispatchMock);
+    jest.spyOn(MiscActions, 'getPhoneCountryCode').mockImplementation(jest.fn());
+
+    const { result, rerender } = renderHook(usePhoneCountryCode);
+
+    rerender(true);
+
+    expect(result.current.phoneCountryCodeList).toHaveLength(8);
+    expect(result.current.phoneCountryCodeIndex).toHaveLength(7);
+    expect(result.current.localPhoneCountryCode).toEqual(MiscState.misc.localPhoneCountryCode);
   });
 });
