@@ -17,7 +17,7 @@ module.exports = {
     '!**/node_modules/**',
     '!**/*.test.{ts,tsx}',
   ],
-  // coverageReporters: ['text', 'json-summary'],
+  coverageReporters: ['text', 'json-summary'],
   coverageThreshold: {
     global: {
       branches: 95,
