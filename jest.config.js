@@ -17,13 +17,13 @@ module.exports = {
     '!**/node_modules/**',
     '!**/*.test.{ts,tsx}',
   ],
-  coverageReporters: ['text', 'json-summary'],
+  coverageReporters: ['text', 'json-summary', 'json', 'lcov'],
   coverageThreshold: {
     global: {
-      branches: 95,
-      functions: 95,
-      lines: 95,
-      statements: 95,
+      branches: 98,
+      functions: 98,
+      lines: 98,
+      statements: 98,
     },
   },
   moduleNameMapper: {
